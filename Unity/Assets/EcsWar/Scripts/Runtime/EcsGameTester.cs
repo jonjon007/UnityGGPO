@@ -22,8 +22,8 @@ namespace EcsWar {
         private void FixedUpdate() {
             if (alwaysTick || tick) {
                 tick = false;
-                inputs[0] = game.ReadInputs(0);
-                inputs[1] = game.ReadInputs(1);
+                inputs[0] = game.ReadInputs(0, 0);
+                inputs[1] = game.ReadInputs(1, 0);
                 game.Update(inputs, 0);
             }
         }

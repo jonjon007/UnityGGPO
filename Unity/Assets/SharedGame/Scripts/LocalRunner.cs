@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using Unity.Collections;
 using UnityGGPO;
 
@@ -10,6 +12,7 @@ namespace SharedGame {
         public IGame Game { get; private set; }
 
         public GameInfo GameInfo { get; private set; }
+        private List<long> lastPlayerInputs = new List<long>(){0,0};
 
         public void Idle(int ms) {
         }
@@ -17,9 +20,13 @@ namespace SharedGame {
         public void RunFrame() {
             var inputs = new long[GameInfo.players.Length];
             for (int i = 0; i < inputs.Length; ++i) {
-                inputs[i] = Game.ReadInputs(GameInfo.players[i].controllerId);
+                inputs[i] = Game.ReadInputs(GameInfo.players[i].controllerId, lastPlayerInputs[i]);
             }
             Game.Update(inputs, 0);
+            // Update player inputs
+            lastPlayerInputs.Clear();
+            lastPlayerInputs.AddRange(inputs);
+            // UnityEngine.Debug.Log(String.Format("Last inputs are: p1 {0}, p2 {1}", inputs[0], inputs[1]));
         }
 
         public void OnTestSave() {
@@ -68,6 +75,7 @@ namespace SharedGame {
             if (buffer.IsCreated) {
                 buffer.Dispose();
             }
+            Game.CleanUp();
         }
     }
 }

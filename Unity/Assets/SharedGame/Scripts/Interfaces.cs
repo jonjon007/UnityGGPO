@@ -19,11 +19,12 @@ namespace SharedGame {
 
         NativeArray<byte> ToBytes();
 
-        long ReadInputs(int controllerId);
+        long ReadInputs(int controllerId, long lastPlayerInputs);
 
         void LogInfo(string filename);
 
         void FreeBytes(NativeArray<byte> data);
+        void CleanUp();
     }
 
     public interface IGameRunner {

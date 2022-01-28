@@ -42,7 +42,7 @@ namespace EcsWar {
             //@TODO
         }
 
-        public long ReadInputs(int id) {
+        public long ReadInputs(int id, long lastInputs) {
             long input = 0;
 
             if (id == 0) {
@@ -149,6 +149,10 @@ namespace EcsWar {
             }
             Framenumber += 1;
             Checksum = Framenumber; // @todo
+        }
+
+        public void CleanUp(){
+
         }
 
         public void FreeBytes(NativeArray<byte> arr) {

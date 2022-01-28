@@ -25,6 +25,7 @@ namespace SharedGame {
 
         public Stopwatch frameWatch = new Stopwatch();
         public Stopwatch idleWatch = new Stopwatch();
+        private List<long> lastPlayerInputs = new List<long>(){0,0};
 
         /*
          * The begin game callback.  We don't need to do anything special here,
@@ -371,11 +372,15 @@ namespace SharedGame {
             for (int i = 0; i < GameInfo.players.Length; ++i) {
                 var player = GameInfo.players[i];
                 if (player.type == GGPOPlayerType.GGPO_PLAYERTYPE_LOCAL) {
-                    var input = Game.ReadInputs(player.controllerId);
+                    var input = Game.ReadInputs(player.controllerId, lastPlayerInputs[i]);
 #if SYNC_TEST
      input = rand(); // test: use random inputs to demonstrate sync testing
 #endif
                     result = GGPO.Session.AddLocalInput(player.handle, input);
+                    // Update player inputs
+                    lastPlayerInputs[i] = input;
+                    // LogGame(String.Format("Last inputs on frame {2} are: p1 {0}, p2 {1}",
+                    //     lastPlayerInputs[0], lastPlayerInputs[1], Game.Framenumber));
                 }
             }
 
@@ -433,6 +438,7 @@ namespace SharedGame {
         }
 
         public void Shutdown() {
+            Game.CleanUp();
             Exit();
             GGPO.SetLogDelegate(null);
         }

@@ -1,5 +1,6 @@
 using SharedGame;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Unity.Collections;
 using UnityEngine;
@@ -18,6 +19,8 @@ namespace VectorWar {
         public const int INPUT_ROTATE_RIGHT = (1 << 3);
         public const int INPUT_FIRE = (1 << 4);
         public const int INPUT_BOMB = (1 << 5);
+        public const int INPUT_UP = (1 << 6);
+        public const int INPUT_UP_THIS_FRAME = (1 << 106);
         public const int MAX_BULLETS = 30;
 
         public const float PI = 3.1415926f;
@@ -111,12 +114,41 @@ namespace VectorWar {
     }
 
     [Serializable]
+    public class Box {
+        public int instanceId;
+        public Vector3Int position;
+
+        public void Serialize(BinaryWriter bw) {
+            bw.Write(instanceId);
+            bw.Write(position.x);
+            bw.Write(position.y);
+            bw.Write(position.z);
+        }
+
+        public void Deserialize(BinaryReader br) {
+            instanceId = br.ReadInt32();
+            position.x = br.ReadInt32();
+            position.y = br.ReadInt32();
+            position.z = br.ReadInt32();
+        }
+
+        public override int GetHashCode() {
+            int hashCode = 1858537542;
+            hashCode = hashCode * -1521134295 + instanceId.GetHashCode();
+            hashCode = hashCode * -1521134295 + position.GetHashCode();
+            return hashCode;
+        }
+    }
+
+    [Serializable]
     public struct VwGame : IGame {
+        Dictionary<int, GameObject> objectIDMap;
         public int Framenumber { get; private set; }
 
         public int Checksum => GetHashCode();
 
         public Ship[] _ships;
+        public Box[] _boxes;
 
         public static Rect _bounds = new Rect(0, 0, 640, 480);
 
@@ -125,6 +157,10 @@ namespace VectorWar {
             bw.Write(_ships.Length);
             for (int i = 0; i < _ships.Length; ++i) {
                 _ships[i].Serialize(bw);
+            }
+            bw.Write(_boxes.Length);
+            for (int i = 0; i < _boxes.Length; ++i) {
+                _boxes[i].Serialize(bw);
             }
         }
 
@@ -137,6 +173,23 @@ namespace VectorWar {
             for (int i = 0; i < _ships.Length; ++i) {
                 _ships[i].Deserialize(br);
             }
+
+            if (length != _boxes.Length) {
+                _boxes = new Box[length];
+            }
+            for (int i = 0; i < _boxes.Length; ++i) {
+                _boxes[i].Deserialize(br);
+            }
+        }
+
+        /* Gets called on shutdown */
+        public void CleanUp(){
+            //Destroy all gameobjects
+            foreach(KeyValuePair<int, GameObject> kvp in objectIDMap){
+                GameObject g = kvp.Value;
+                GameObject.Destroy(g);
+            }
+            objectIDMap.Clear();
         }
 
         public NativeArray<byte> ToBytes() {
@@ -154,6 +207,12 @@ namespace VectorWar {
                     Deserialize(reader);
                 }
             }
+        }
+
+        private GameObject GetObjectFromID(int id){
+            GameObject result = null;
+            objectIDMap.TryGetValue(id, out result);
+            return result;
         }
 
         private static float DegToRad(float deg) {
@@ -177,6 +236,8 @@ namespace VectorWar {
             var h = _bounds.yMax - _bounds.yMin;
             var r = h / 4;
             Framenumber = 0;
+            objectIDMap = new Dictionary<int, GameObject>();
+            // Spawn ships
             _ships = new Ship[num_players];
             for (int i = 0; i < _ships.Length; i++) {
                 _ships[i] = new Ship();
@@ -193,12 +254,38 @@ namespace VectorWar {
                 _ships[i].health = STARTING_HEALTH;
                 _ships[i].radius = SHIP_RADIUS;
             }
+            // Spawn boxes
+            _boxes = new Box[num_players];
+            for (int i = 0; i < _boxes.Length; i++) {
+                createBox(i);
+            }
+        }
+
+        private void createBox(int player){
+            _boxes[player] = new Box();
+            // Get new position and assign it
+            Vector3Int pos = new Vector3Int(player, 0, 0);
+            _boxes[player].position = pos;
+
+            // Create game object and assign instance id
+            GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cube.transform.position = pos;
+            int id =cube.GetInstanceID();
+            _boxes[player].instanceId = id;
+
+            // Add object and id to map
+            objectIDMap.Add(id, cube);
         }
 
         public void GetShipAI(int i, out float heading, out float thrust, out int fire) {
             heading = (_ships[i].heading + 5) % 360;
             thrust = 0;
             fire = 0;
+        }
+
+        public void ParseBoxInputs(long inputs, int i, out int dir, out int dirThisFrame) {
+            dir = 0; //TODO: Update
+            dirThisFrame = (inputs & INPUT_UP_THIS_FRAME) != 0 ? 8 : 0;
         }
 
         public void ParseShipInputs(long inputs, int i, out float heading, out float thrust, out int fire) {
@@ -226,6 +313,25 @@ namespace VectorWar {
                 thrust = 0;
             }
             fire = (int)(inputs & INPUT_FIRE);
+        }
+
+        public void MoveBox(int index, int dirThisFrame) {
+            var box = _boxes[index];
+
+            if (dirThisFrame == 8) {
+                int dx = 0;
+                int dy = 1;
+                int dz = 0;
+                GGPORunner.LogGame("Moving box up.");
+                box.position.x = box.position.x + dx;
+                box.position.y = box.position.y + dy;
+                box.position.z = box.position.z + dz;
+                GGPORunner.LogGame($"New box position: {box.position.x},{box.position.y},{box.position.z}");
+            }
+
+            // Move physical box
+            GameObject boxObj = GetObjectFromID(box.instanceId);
+            boxObj.transform.position = box.position;
         }
 
         public void MoveShip(int index, float heading, float thrust, int fire) {
@@ -333,17 +439,20 @@ namespace VectorWar {
 
         public void Update(long[] inputs, int disconnect_flags) {
             Framenumber++;
-            for (int i = 0; i < _ships.Length; i++) {
+            for (int i = 0; i < _boxes.Length; i++) {
                 float thrust, heading;
                 int fire;
+                int dir, dirThisFrame = 0;
 
                 if ((disconnect_flags & (1 << i)) != 0) {
-                    GetShipAI(i, out heading, out thrust, out fire);
+                    //GetShipAI(i, out heading, out thrust, out fire);
                 }
                 else {
-                    ParseShipInputs(inputs[i], i, out heading, out thrust, out fire);
+                    ParseBoxInputs(inputs[i], i, out dir, out dirThisFrame);
+                    //ParseShipInputs(inputs[i], i, out heading, out thrust, out fire);
                 }
-                MoveShip(i, heading, thrust, fire);
+                //MoveShip(i, heading, thrust, fire);
+                MoveBox(i, dirThisFrame); //TODO: Implement
 
                 if (_ships[i].cooldown != 0) {
                     _ships[i].cooldown--;
@@ -351,47 +460,16 @@ namespace VectorWar {
             }
         }
 
-        public long ReadInputs(int id) {
+        public long ReadInputs(int id, long lastInputs) {
             long input = 0;
 
-            if (id == 0) {
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.UpArrow)) {
-                    input |= INPUT_THRUST;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.DownArrow)) {
-                    input |= INPUT_BREAK;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.LeftArrow)) {
-                    input |= INPUT_ROTATE_LEFT;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.RightArrow)) {
-                    input |= INPUT_ROTATE_RIGHT;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.RightControl)) {
-                    input |= INPUT_FIRE;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.RightShift)) {
-                    input |= INPUT_BOMB;
-                }
-            }
-            else if (id == 1) {
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.W)) {
-                    input |= INPUT_THRUST;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.S)) {
-                    input |= INPUT_BREAK;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.A)) {
-                    input |= INPUT_ROTATE_LEFT;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.D)) {
-                    input |= INPUT_ROTATE_RIGHT;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.F)) {
-                    input |= INPUT_FIRE;
-                }
-                if (UnityEngine.Input.GetKey(UnityEngine.KeyCode.G)) {
-                    input |= INPUT_BOMB;
+            string shotKey = id == 0 ? "a" : "b";
+
+            if(UnityEngine.Input.GetKey(shotKey)){
+                input |= INPUT_UP;
+                if((lastInputs & INPUT_UP) == 0
+                    && (lastInputs & INPUT_UP_THIS_FRAME) == 0){
+                    input |= INPUT_UP_THIS_FRAME;
                 }
             }
 
