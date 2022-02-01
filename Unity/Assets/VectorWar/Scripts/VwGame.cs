@@ -20,7 +20,13 @@ namespace VectorWar {
         public const int INPUT_FIRE = (1 << 4);
         public const int INPUT_BOMB = (1 << 5);
         public const int INPUT_UP = (1 << 6);
+        public const int INPUT_DOWN = (1 << 7);
+        public const int INPUT_LEFT = (1 << 8);
+        public const int INPUT_RIGHT = (1 << 9);
         public const int INPUT_UP_THIS_FRAME = (1 << 106);
+        public const int INPUT_DOWN_THIS_FRAME = (1 << 107);
+        public const int INPUT_LEFT_THIS_FRAME = (1 << 108);
+        public const int INPUT_RIGHT_THIS_FRAME = (1 << 109);
         public const int MAX_BULLETS = 30;
 
         public const float PI = 3.1415926f;
@@ -33,6 +39,15 @@ namespace VectorWar {
         public const float BULLET_SPEED = 5f;
         public const int BULLET_COOLDOWN = 8;
         public const int BULLET_DAMAGE = 10;
+
+        public const string P1_UP_KEY = "w";
+        public const string P1_DOWN_KEY = "s";
+        public const string P1_LEFT_KEY = "a";
+        public const string P1_RIGHT_KEY = "d";
+        public const string P2_UP_KEY = "up";
+        public const string P2_DOWN_KEY = "down";
+        public const string P2_LEFT_KEY = "left";
+        public const string P2_RIGHT_KEY = "right";
     }
 
     [Serializable]
@@ -166,16 +181,17 @@ namespace VectorWar {
 
         public void Deserialize(BinaryReader br) {
             Framenumber = br.ReadInt32();
-            int length = br.ReadInt32();
-            if (length != _ships.Length) {
-                _ships = new Ship[length];
+            int ship_length = br.ReadInt32();
+            if (ship_length != _ships.Length) {
+                _ships = new Ship[ship_length];
             }
             for (int i = 0; i < _ships.Length; ++i) {
                 _ships[i].Deserialize(br);
             }
 
-            if (length != _boxes.Length) {
-                _boxes = new Box[length];
+            int box_length = br.ReadInt32();
+            if (box_length != _boxes.Length) {
+                _boxes = new Box[box_length];
             }
             for (int i = 0; i < _boxes.Length; ++i) {
                 _boxes[i].Deserialize(br);
@@ -209,9 +225,34 @@ namespace VectorWar {
             }
         }
 
+        /* Determines direction number based on movement inputs*/
+        private int GetDirNumber(int v, int h){
+            if(h > 0){
+                if(v > 0)
+                    return 9; //Up-right
+                if (v < 0)
+                    return 3; //Down-right
+                return 6; //Right
+            }
+            if(h < 0){
+                if(v > 0)
+                    return 7; //Up-left
+                if (v < 0)
+                    return 1; //Down-left
+                return 4; //Left
+            }
+            if(v > 0)
+                return 8; //Up
+            if (v < 0)
+                return 2; //Down
+            return 5; //Neutral
+        }
+
         private GameObject GetObjectFromID(int id){
             GameObject result = null;
             objectIDMap.TryGetValue(id, out result);
+            if(result == null)
+                Debug.Log("GO not found.");
             return result;
         }
 
@@ -223,6 +264,34 @@ namespace VectorWar {
             float x = rhs.x - lhs.x;
             float y = rhs.y - lhs.y;
             return Mathf.Sqrt(x * x + y * y);
+        }
+
+        private bool CheckInput(long currentInputs, int input){
+            return (currentInputs & input) != 0;
+        }
+
+        /* Takes a direction number (1-9) and returns a Vector2 representing that direction. */
+        private Vector2Int GetVectorFromDirNumber(int dirNum){
+            Vector2Int result = new Vector2Int(0,0);
+            // TODO: Determine what's faster: math or checking with exact values?
+            // Positive X (3,6,9)
+            if(dirNum % 3 == 0){
+                result.x = 1;
+            }
+            // Positive Y (7,8,9)
+            if((dirNum-1) / 3 == 2){
+                result.y = 1;
+            }
+            // Negative X (1,4,7)
+            if(dirNum % 3 == 1){
+                result.x = -1;
+            }
+            // Negative Y (1,2,3)
+            if((dirNum-1) / 3 == 0){
+                result.y = -1;
+            }
+
+            return result;
         }
 
         /*
@@ -285,7 +354,22 @@ namespace VectorWar {
 
         public void ParseBoxInputs(long inputs, int i, out int dir, out int dirThisFrame) {
             dir = 0; //TODO: Update
-            dirThisFrame = (inputs & INPUT_UP_THIS_FRAME) != 0 ? 8 : 0;
+            int v = 0;
+            int h = 0;
+
+            // Vertical
+            if(CheckInput(inputs, INPUT_UP_THIS_FRAME))
+                v = 1;
+            else if(CheckInput(inputs, INPUT_DOWN_THIS_FRAME))
+                v = -1;
+
+            // Horizontal
+            if(CheckInput(inputs, INPUT_RIGHT_THIS_FRAME))
+                h = 1;
+            else if(CheckInput(inputs, INPUT_LEFT_THIS_FRAME))
+                h = -1;
+
+            dirThisFrame = GetDirNumber(v, h);
         }
 
         public void ParseShipInputs(long inputs, int i, out float heading, out float thrust, out int fire) {
@@ -318,9 +402,10 @@ namespace VectorWar {
         public void MoveBox(int index, int dirThisFrame) {
             var box = _boxes[index];
 
-            if (dirThisFrame == 8) {
-                int dx = 0;
-                int dy = 1;
+            if (dirThisFrame > 0) {
+                Vector2Int dirVector = GetVectorFromDirNumber(dirThisFrame);
+                int dx = dirVector.x;
+                int dy = dirVector.y;
                 int dz = 0;
                 GGPORunner.LogGame("Moving box up.");
                 box.position.x = box.position.x + dx;
@@ -465,11 +550,47 @@ namespace VectorWar {
 
             string shotKey = id == 0 ? "a" : "b";
 
-            if(UnityEngine.Input.GetKey(shotKey)){
+            // Check up input
+            if(UnityEngine.Input.GetKey(
+                id == 0 ? P1_UP_KEY : P2_UP_KEY
+            )){
                 input |= INPUT_UP;
                 if((lastInputs & INPUT_UP) == 0
                     && (lastInputs & INPUT_UP_THIS_FRAME) == 0){
                     input |= INPUT_UP_THIS_FRAME;
+                }
+            }
+
+            // Check down input
+            if(UnityEngine.Input.GetKey(
+                id == 0 ? P1_DOWN_KEY : P2_DOWN_KEY
+            )){
+                input |= INPUT_DOWN;
+                if((lastInputs & INPUT_DOWN) == 0
+                    && (lastInputs & INPUT_DOWN_THIS_FRAME) == 0){
+                    input |= INPUT_DOWN_THIS_FRAME;
+                }
+            }
+
+            // Check left input
+            if(UnityEngine.Input.GetKey(
+                id == 0 ? P1_LEFT_KEY : P2_LEFT_KEY
+            )){
+                input |= INPUT_LEFT;
+                if((lastInputs & INPUT_LEFT) == 0
+                    && (lastInputs & INPUT_LEFT_THIS_FRAME) == 0){
+                    input |= INPUT_LEFT_THIS_FRAME;
+                }
+            }
+
+            // Check right input
+            if(UnityEngine.Input.GetKey(
+                id == 0 ? P1_RIGHT_KEY : P2_RIGHT_KEY
+            )){
+                input |= INPUT_RIGHT;
+                if((lastInputs & INPUT_RIGHT) == 0
+                    && (lastInputs & INPUT_RIGHT_THIS_FRAME) == 0){
+                    input |= INPUT_RIGHT_THIS_FRAME;
                 }
             }
 

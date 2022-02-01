@@ -11,7 +11,7 @@ namespace SharedGame {
 
         public int PlayerIndex { get; set; }
 
-        public const int MAX_PLAYERS = 2;
+        public const int MAX_PLAYERS = 4;
         private const int FRAME_DELAY = 2;
 
         public string Name { get; private set; }
