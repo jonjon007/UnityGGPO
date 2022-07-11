@@ -1,5 +1,21 @@
 {
   "dependencies": {
+    "com.danielmansson.mathematics.fixedpoint": {
+      "version": "https://github.com/danielmansson/Unity.Mathematics.FixedPoint.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {
+        "com.unity.mathematics": "1.1.0"
+      },
+      "hash": "d44836cab621f299d6d1bfa275daa437aafc739b"
+    },
+    "com.sepm.physics": {
+      "version": "https://github.com/jonjon007/SepM.Physics.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "403d71d17b83f8ae53d871efb5df49f2543ae74d"
+    },
     "com.unity.burst": {
       "version": "1.4.1",
       "depth": 1,

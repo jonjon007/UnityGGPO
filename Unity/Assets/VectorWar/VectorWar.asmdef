@@ -1,8 +1,10 @@
 {
     "name": "UnityGGPO-VectorWar",
+    "rootNamespace": "",
     "references": [
         "GUID:0c0029a6e6a29384bb13962f99bfd024",
-        "GUID:18e4a392e225ae14786f1b25084eda15"
+        "GUID:18e4a392e225ae14786f1b25084eda15",
+        "GUID:945d17906b4a8c24bae00263652d7388"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
