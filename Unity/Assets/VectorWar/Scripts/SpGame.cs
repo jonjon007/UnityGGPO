@@ -275,7 +275,7 @@ namespace SimpPlatformer {
             return Mathf.Sqrt(x * x + y * y);
         }
 
-        private bool CheckInput(long currentInputs, int input){
+        private bool CheckInput(long currentInputs, uint input){
             return (currentInputs & input) != 0;
         }
 
@@ -369,15 +369,15 @@ namespace SimpPlatformer {
             int h = 0;
 
             // Vertical
-            if(CheckInput(inputs, INPUT_UP_THIS_FRAME))
+            if(CheckInput(inputs, InputRegistry.INPUT_UP_THIS_FRAME))
                 v = 1;
-            else if(CheckInput(inputs, INPUT_DOWN_THIS_FRAME))
+            else if(CheckInput(inputs, InputRegistry.INPUT_DOWN_THIS_FRAME))
                 v = -1;
 
             // Horizontal
-            if(CheckInput(inputs, INPUT_RIGHT_THIS_FRAME))
+            if(CheckInput(inputs, InputRegistry.INPUT_RIGHT_THIS_FRAME))
                 h = 1;
-            else if(CheckInput(inputs, INPUT_LEFT_THIS_FRAME))
+            else if(CheckInput(inputs, InputRegistry.INPUT_LEFT_THIS_FRAME))
                 h = -1;
 
             dirThisFrame = GetDirNumber(v, h);
@@ -556,57 +556,8 @@ namespace SimpPlatformer {
             }
         }
 
-        // TODO: Use InputHandler
         public long ReadInputs(int id, long lastInputs) {
-            long input = 0;
-
-            string shotKey = id == 0 ? "a" : "b";
-
-            // Check up input
-            if(UnityEngine.Input.GetKey(
-                id == 0 ? P1_UP_KEY : P2_UP_KEY
-            )){
-                input |= INPUT_UP;
-                if((lastInputs & INPUT_UP) == 0
-                    && (lastInputs & INPUT_UP_THIS_FRAME) == 0){
-                    input |= INPUT_UP_THIS_FRAME;
-                }
-            }
-
-            // Check down input
-            if(UnityEngine.Input.GetKey(
-                id == 0 ? P1_DOWN_KEY : P2_DOWN_KEY
-            )){
-                input |= INPUT_DOWN;
-                if((lastInputs & INPUT_DOWN) == 0
-                    && (lastInputs & INPUT_DOWN_THIS_FRAME) == 0){
-                    input |= INPUT_DOWN_THIS_FRAME;
-                }
-            }
-
-            // Check left input
-            if(UnityEngine.Input.GetKey(
-                id == 0 ? P1_LEFT_KEY : P2_LEFT_KEY
-            )){
-                input |= INPUT_LEFT;
-                if((lastInputs & INPUT_LEFT) == 0
-                    && (lastInputs & INPUT_LEFT_THIS_FRAME) == 0){
-                    input |= INPUT_LEFT_THIS_FRAME;
-                }
-            }
-
-            // Check right input
-            if(UnityEngine.Input.GetKey(
-                id == 0 ? P1_RIGHT_KEY : P2_RIGHT_KEY
-            )){
-                input |= INPUT_RIGHT;
-                if((lastInputs & INPUT_RIGHT) == 0
-                    && (lastInputs & INPUT_RIGHT_THIS_FRAME) == 0){
-                    input |= INPUT_RIGHT_THIS_FRAME;
-                }
-            }
-
-            return input;
+            return InputHandler.ih.ReadInputs(id, lastInputs);
         }
 
         public void FreeBytes(NativeArray<byte> data) {

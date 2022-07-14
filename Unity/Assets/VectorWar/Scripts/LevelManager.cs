@@ -69,10 +69,10 @@ public class LevelManager : MonoBehaviour, Subscriber
 
     // Subscriber Interface
     public void Subscribe(){
-        if(!GameManager.subscribers.Contains(this)) GameManager.subscribers.Add(this);
+        if(!RuntimeManager.subscribers.Contains(this)) RuntimeManager.subscribers.Add(this);
     }
     public void Unsubscribe(){
-        if(GameManager.subscribers.Contains(this)) GameManager.subscribers.Remove(this);
+        if(RuntimeManager.subscribers.Contains(this)) RuntimeManager.subscribers.Remove(this);
     }
     public void Step(fp timestep, long inputs){
         // Run physics
