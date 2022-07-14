@@ -70,7 +70,7 @@ public class RuntimeManager : MonoBehaviour {
     /// </summary>
     private void LoadDefaultControls() {
         IR.AddControlsToMap(Keyboard.current, IR.DEFAULT_P1_KEYBOARD_BUTTON_MAPPING, 1);
-        IR.AddControlsToMap(Keyboard.current, IR.DEFAULT_P1_KEYBOARD_BUTTON_MAPPING, 2);
+        IR.AddControlsToMap(Keyboard.current, IR.DEFAULT_P2_KEYBOARD_BUTTON_MAPPING, 2);
     }
 
     /// <summary>

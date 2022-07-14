@@ -32,5 +32,9 @@ namespace SepM.DataTypes{
             hashCode = hashCode * -1521134295 + mapping.Length;
             return hashCode;
         }
+
+        public override string ToString() {
+            return string.Format("PlayerControl: Player {0}, Input {1}, Mapping {2}, Device {3}", player, input, mapping, device);
+        }
     }
 }

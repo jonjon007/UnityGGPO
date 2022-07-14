@@ -31,10 +31,10 @@ public static class InputRegistry {
     };
 
     public static List<(string, string)> DEFAULT_P2_KEYBOARD_BUTTON_MAPPING = new List<(string, string)>(){
-        (INPUT_UP_NM,"up"),
-        (INPUT_DOWN_NM,"down"),
-        (INPUT_LEFT_NM,"left"),
-        (INPUT_RIGHT_NM,"right"),
+        (INPUT_UP_NM,"uparrow"),
+        (INPUT_DOWN_NM,"downarrow"),
+        (INPUT_LEFT_NM,"leftarrow"),
+        (INPUT_RIGHT_NM,"rightarrow"),
     };
 
     /// <summary>
