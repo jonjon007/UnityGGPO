@@ -47,7 +47,7 @@ public class LevelManager : MonoBehaviour, Subscriber
         // Add to objects map
         objectsMap.Add(charTuple);
         // Create and add new character object
-        Character newChar = new Character(charTuple.Item2, this);
+        Character newChar = new Character(charTuple.Item2, world);
         characters.Add(newChar);
     }
 

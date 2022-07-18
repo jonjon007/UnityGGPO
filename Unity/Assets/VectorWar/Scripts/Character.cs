@@ -11,10 +11,10 @@ using UnityEngine.SceneManagement;
 [Serializable]
 public class Character : ICollider
 {
-    private LevelManager lm;
     PhysObject physObj;
     public bool onGround;
     public int moveSpeed = 3;
+    private PhysWorld world;
 
     public void Serialize(BinaryWriter bw) {
 
@@ -24,11 +24,11 @@ public class Character : ICollider
 
     }
 
-    public Character(PhysObject p, LevelManager l){
+    public Character(PhysObject p, PhysWorld w) {
         physObj = p;
-        lm = l;
         // Also set the physObject's ICollider to this
         physObj.IColl = this;
+        world = w;
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class Character : ICollider
         // Ground detection
         bool isOnGround = false;
         // TODO: Is FindAll necessary since we filter in the Raycast method? Possibly.
-        foreach(PhysObject otherObj in lm.GetPhysObjects().FindAll(p => !(p.Coll is null) && p.Coll.InLayers(Constants.layer_ground))){
+        foreach(PhysObject otherObj in world.objectsMap.ConvertAll<PhysObject>(t => t.Item2).FindAll(p => !(p.Coll is null) && p.Coll.InLayers(Constants.layer_ground))){
             if((algo.Raycast(otherObj, physObj.Transform.Position + physObj.Transform.Right()*.25m + physObj.Transform.Up()*-.5m,
                 new fp3(0,-.1m, 0), Constants.layer_ground).HasCollision
                 || algo.Raycast(otherObj, physObj.Transform.Position - physObj.Transform.Right()*.25m + physObj.Transform.Up()*-.5m,
