@@ -15,9 +15,10 @@ public class Character : ICollider
     public bool onGround;
     public int moveSpeed = 3;
     private PhysWorld world;
+    public int instanceId;
 
     public void Serialize(BinaryWriter bw) {
-
+        // TOOD: Serialize instance id
     }
 
     public void Deserialize(BinaryReader br) {

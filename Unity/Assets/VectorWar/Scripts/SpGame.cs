@@ -83,7 +83,7 @@ namespace SimpPlatformer {
         public Box[] _boxes;
         public PhysWorld _world;
         // TODO: How to manage this?
-        public List<Character> characters;
+        public Character[] _characters;
 
         // TODO: Just pass in PhysWorld and Character. Should be enough
 
@@ -229,40 +229,39 @@ namespace SimpPlatformer {
             var r = h / 4;
             Framenumber = 0;
             objectIDMap = new Dictionary<int, GameObject>();
-            
+
             // Create world
             _world = new PhysWorld();
 
-            // Create stationary capsule
-            Tuple<GameObject, PhysObject> capsuleTuple = _world.CreateCapsuleObject(
-                fp3.zero, 5, 6, true, false, fp3.zero
-            );
-            //PhysObjController capsuleObjCont = capsuleTuple.Item1.AddComponent<PhysObjController>();
-            //capsuleObjCont.setPhysObject(capsuleTuple.Item2);
+            //// Create stationary capsule
+            //Tuple<GameObject, PhysObject> capsuleTuple = _world.CreateCapsuleObject(
+            //    fp3.zero, 5, 6, true, false, fp3.zero
+            //);
+            ////PhysObjController capsuleObjCont = capsuleTuple.Item1.AddComponent<PhysObjController>();
+            ////capsuleObjCont.setPhysObject(capsuleTuple.Item2);
 
             // Create falling sphere
-            Tuple<GameObject, PhysObject> sphereTuple = _world.CreateSphereObject(
-                new fp3(5, 10, 0), 2, true, true, Constants.GRAVITY);
-            //PhysObjController sphereObjCont = sphereTuple.Item1.AddComponent<PhysObjController>();
-            //sphereObjCont.setPhysObject(sphereTuple.Item2);
+            //Tuple<GameObject, PhysObject> sphereTuple = _world.CreateSphereObject(
+            //    new fp3(5, 10, 0), 2, true, true, Constants.GRAVITY);
+            ////PhysObjController sphereObjCont = sphereTuple.Item1.AddComponent<PhysObjController>();
+            ////sphereObjCont.setPhysObject(sphereTuple.Item2);
 
-            // Create falling box
-            Tuple<GameObject, PhysObject> fboxTuple = _world.CreateAABBoxObject(
-                new fp3(10, -5, 0), new fp3(1, 1, 1), true, true, Constants.GRAVITY);
-            //PhysObjController fboxObjCont = fboxTuple.Item1.AddComponent<PhysObjController>();
-            //fboxObjCont.setPhysObject(fboxTuple.Item2);
+            ////// Create falling box
+            ////Tuple<GameObject, PhysObject> fboxTuple = _world.CreateAABBoxObject(
+            ////    new fp3(10, -5, 0), new fp3(1, 1, 1), true, true, Constants.GRAVITY);
+            //////PhysObjController fboxObjCont = fboxTuple.Item1.AddComponent<PhysObjController>();
+            //////fboxObjCont.setPhysObject(fboxTuple.Item2);
 
-            // Create stationary box
-            Tuple<GameObject, PhysObject> boxTuple = _world.CreateAABBoxObject(
-                new fp3(10, -10, 0), new fp3(10, 3, 5), true, false, fp3.zero);
-            //PhysObjController boxObjCont = boxTuple.Item1.AddComponent<PhysObjController>();
-            //boxObjCont.setPhysObject(boxTuple.Item2);
-
+            //// Create stationary box
+            //Tuple<GameObject, PhysObject> boxTuple = _world.CreateAABBoxObject(
+            //    new fp3(0, -10, 0), new fp3(10, 3, 5), true, false, fp3.zero);
+            ////PhysObjController boxObjCont = boxTuple.Item1.AddComponent<PhysObjController>();
+            ////boxObjCont.setPhysObject(boxTuple.Item2);
 
             // Create ground
             // TODO: Make constant
             GameObject groundPrefab = Resources.Load<GameObject>("_PREFAB/Ground");
-            GameObject newGround = GameObject.Instantiate(groundPrefab, new Vector3(1, 0, 0), Quaternion.identity);
+            GameObject newGround = GameObject.Instantiate(groundPrefab, new Vector3(2, 0, 0), Quaternion.identity);
             newGround.transform.localScale = new Vector3(5, 1, 1);
             newGround.GetComponent<SepObject>().Initialize(_world);
 
@@ -274,10 +273,13 @@ namespace SimpPlatformer {
             charTuple.Item2.DynamicFriction = 0;
             charTuple.Item2.StaticFriction = 0;
 
-            // Create and add new character object
-            characters = new List<Character>();
-            Character newChar = new Character(charTuple.Item2, _world);
-            characters.Add(newChar);
+            _characters = new Character[num_players];
+            for (int i = 0; i < _characters.Length; i++) {
+                // Create and add new character object
+                _characters = new List<Character>();
+                Character newChar = new Character(charTuple.Item2, _world);
+                _characters.Add(newChar);
+            }
 
 
             // Spawn boxes
