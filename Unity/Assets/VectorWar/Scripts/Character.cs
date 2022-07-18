@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Unity.Mathematics.FixedPoint;
 using SepM.Physics;
 using SepM.Utils;
@@ -14,6 +15,14 @@ public class Character : ICollider
     PhysObject physObj;
     public bool onGround;
     public int moveSpeed = 3;
+
+    public void Serialize(BinaryWriter bw) {
+
+    }
+
+    public void Deserialize(BinaryReader br) {
+
+    }
 
     public Character(PhysObject p, LevelManager l){
         physObj = p;

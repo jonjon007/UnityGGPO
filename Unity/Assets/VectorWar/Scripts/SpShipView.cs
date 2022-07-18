@@ -10,9 +10,7 @@ namespace SimpPlatformer {
         public Image imgProgress;
         public Transform model;
 
-        public void Populate(Ship shipGs, PlayerConnectionInfo info) {
-            transform.position = shipGs.position;
-            model.rotation = Quaternion.Euler(0, 0, shipGs.heading);
+        public void Populate(PlayerConnectionInfo info) {
             string status = "";
             int progress = -1;
             switch (info.state) {

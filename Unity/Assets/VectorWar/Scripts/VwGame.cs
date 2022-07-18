@@ -525,8 +525,8 @@ namespace VectorWar {
         public void Update(long[] inputs, int disconnect_flags) {
             Framenumber++;
             for (int i = 0; i < _boxes.Length; i++) {
-                float thrust, heading;
-                int fire;
+                //float thrust, heading;
+                //int fire;
                 int dir, dirThisFrame = 0;
 
                 if ((disconnect_flags & (1 << i)) != 0) {
