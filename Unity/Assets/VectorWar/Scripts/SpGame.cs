@@ -267,18 +267,23 @@ namespace SimpPlatformer {
 
             // Create character
             // Create tuple (also adds aabbox to world)
-            Tuple<GameObject, PhysObject> charTuple = _world.CreateAABBoxObject(
-                new fp3(0, 10, 0), new fp3(1, 1, 1), true, true, Constants.GRAVITY * 2, Constants.coll_layers.player
-            );
-            charTuple.Item2.DynamicFriction = 0;
-            charTuple.Item2.StaticFriction = 0;
 
+
+            // Create and add new character objects
             _characters = new Character[num_players];
             for (int i = 0; i < _characters.Length; i++) {
-                // Create and add new character object
-                _characters = new List<Character>();
+                Tuple<GameObject, PhysObject> charTuple = _world.CreateAABBoxObject(
+                    new fp3(i, 10, 0), new fp3(1, 1, 1), true, true, Constants.GRAVITY * 2, Constants.coll_layers.player
+                );
+                charTuple.Item2.DynamicFriction = 0;
+                charTuple.Item2.StaticFriction = 0;
                 Character newChar = new Character(charTuple.Item2, _world);
-                _characters.Add(newChar);
+                _characters[i] = newChar;
+                int id = charTuple.Item1.GetInstanceID();
+                _characters[i].instanceId = id;
+
+                // Add object and id to map
+                objectIDMap.Add(id, charTuple.Item1);
             }
 
 
@@ -376,8 +381,8 @@ namespace SimpPlatformer {
             _world.UpdateGameObjects();
 
             // Game logic
-            for (int i = 0; i < characters.Count; i++) {
-                characters[i].Step(timestep, inputs[i]);
+            for (int i = 0; i < _characters.Length; i++) {
+                _characters[i].Step(timestep, inputs[i]);
             }
         }
 
