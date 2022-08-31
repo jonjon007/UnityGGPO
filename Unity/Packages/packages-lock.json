@@ -14,7 +14,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "447520747de719ee7a94db255b6e4f51e7394ab6"
+      "hash": "4dd641927885da7a4eb7e94278bdb9d5c58d21dd"
     },
     "com.unity.burst": {
       "version": "1.4.1",
@@ -224,7 +224,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.test-framework": {
-      "version": "1.1.24",
+      "version": "1.1.27",
       "depth": 1,
       "source": "registry",
       "dependencies": {

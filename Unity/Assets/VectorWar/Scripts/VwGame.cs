@@ -46,8 +46,10 @@ namespace VectorWar {
         public const string P1_RIGHT_KEY = "d";
         public const string P2_UP_KEY = "up";
         public const string P2_DOWN_KEY = "down";
-        public const string P2_LEFT_KEY = "left";
         public const string P2_RIGHT_KEY = "right";
+        public const string P2_LEFT_KEY = "left";
+        public const string P1_FIRE_KEY = "space";
+        public const string P2_FIRE_KEY = "enter";
     }
 
     [Serializable]
@@ -333,7 +335,7 @@ namespace VectorWar {
         private void createBox(int player){
             _boxes[player] = new Box();
             // Get new position and assign it
-            Vector3Int pos = new Vector3Int(player, 0, 0);
+            Vector3Int pos = new Vector3Int(player+320, 228+player, -9);
             _boxes[player].position = pos;
 
             // Create game object and assign instance id
@@ -377,20 +379,20 @@ namespace VectorWar {
 
             GGPORunner.LogGame($"parsing ship {i} inputs: {inputs}.");
 
-            if ((inputs & INPUT_ROTATE_RIGHT) != 0) {
+            if ((inputs & INPUT_RIGHT) != 0) {
                 heading = (ship.heading - ROTATE_INCREMENT) % 360;
             }
-            else if ((inputs & INPUT_ROTATE_LEFT) != 0) {
+            else if ((inputs & INPUT_LEFT) != 0) {
                 heading = (ship.heading + ROTATE_INCREMENT + 360) % 360;
             }
             else {
                 heading = ship.heading;
             }
 
-            if ((inputs & INPUT_THRUST) != 0) {
+            if ((inputs & INPUT_UP) != 0) {
                 thrust = SHIP_THRUST;
             }
-            else if ((inputs & INPUT_BREAK) != 0) {
+            else if ((inputs & INPUT_DOWN) != 0) {
                 thrust = -SHIP_THRUST;
             }
             else {
@@ -525,18 +527,18 @@ namespace VectorWar {
         public void Update(long[] inputs, int disconnect_flags) {
             Framenumber++;
             for (int i = 0; i < _boxes.Length; i++) {
-                //float thrust, heading;
-                //int fire;
+                float thrust, heading;
+                int fire;
                 int dir, dirThisFrame = 0;
 
                 if ((disconnect_flags & (1 << i)) != 0) {
-                    //GetShipAI(i, out heading, out thrust, out fire);
+                    GetShipAI(i, out heading, out thrust, out fire);
                 }
                 else {
                     ParseBoxInputs(inputs[i], i, out dir, out dirThisFrame);
-                    //ParseShipInputs(inputs[i], i, out heading, out thrust, out fire);
+                    ParseShipInputs(inputs[i], i, out heading, out thrust, out fire);
                 }
-                //MoveShip(i, heading, thrust, fire);
+                MoveShip(i, heading, thrust, fire);
                 MoveBox(i, dirThisFrame); //TODO: Implement
 
                 if (_ships[i].cooldown != 0) {
@@ -547,7 +549,7 @@ namespace VectorWar {
 
         public long ReadInputs(int id, long lastInputs) {
             long input = 0;
-
+            /*
             string shotKey = id == 0 ? "a" : "b";
 
             // Check up input
@@ -593,6 +595,14 @@ namespace VectorWar {
                     input |= INPUT_RIGHT_THIS_FRAME;
                 }
             }
+
+            // Check fire input
+            if(UnityEngine.Input.GetKey(
+                id == 0 ? P1_FIRE_KEY : P2_FIRE_KEY
+            )){
+                input |= INPUT_FIRE;
+            }
+            */
 
             return input;
         }
