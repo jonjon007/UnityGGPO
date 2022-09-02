@@ -6,6 +6,7 @@ using Unity.Collections;
 using Unity.Mathematics.FixedPoint;
 using UnityEngine;
 using SepM.Physics;
+using System.Data;
 
 namespace SimpPlatformer {
 
@@ -260,10 +261,8 @@ namespace SimpPlatformer {
 
             // Create ground
             // TODO: Make constant
-            GameObject groundPrefab = Resources.Load<GameObject>("_PREFAB/Ground");
-            GameObject newGround = GameObject.Instantiate(groundPrefab, new Vector3(2, 0, 0), Quaternion.identity);
-            newGround.transform.localScale = new Vector3(5, 1, 1);
-            newGround.GetComponent<SepObject>().Initialize(_world);
+            GameObject mapPrefab = GameObject.Instantiate(Resources.Load<GameObject>("_PREFAB/Maps/Map1"));
+            mapPrefab.GetComponent<Map>().Initialize(_world);
 
             // Create character
             // Create tuple (also adds aabbox to world)

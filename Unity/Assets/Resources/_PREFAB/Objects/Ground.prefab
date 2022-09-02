@@ -98,6 +98,7 @@ MonoBehaviour:
   colliderType: 1
   colliderLayer: 1
   physObj:
+    InstanceId: 3
     Transform:
       Position:
         x:

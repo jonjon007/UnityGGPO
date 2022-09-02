@@ -1,6 +1,6 @@
 using UnityEngine;
 
-[ExecuteInEditMode]
+//[ExecuteInEditMode]
 public class TileTexture : MonoBehaviour
 {
     private Vector3 _currentScale;
@@ -21,7 +21,7 @@ public class TileTexture : MonoBehaviour
         if (CheckForDefaultSize()) return;
 
         _currentScale = transform.localScale;
-        var mesh = GetMesh();
+        var mesh = GetComponent<MeshFilter>().mesh;
         mesh.uv = SetupUvMap(mesh.uv);
         mesh.name = "Cube Instance";
 
@@ -29,25 +29,6 @@ public class TileTexture : MonoBehaviour
         {
             GetComponent<Renderer>().sharedMaterial.mainTexture.wrapMode = TextureWrapMode.Repeat;
         }
-    }
-
-    private Mesh GetMesh()
-    {
-        Mesh mesh;
-
-        #if UNITY_EDITOR
-
-        var meshFilter = GetComponent<MeshFilter>();
-        var meshCopy = Instantiate(meshFilter.sharedMesh);
-        mesh = meshFilter.mesh = meshCopy;
-
-        #else
-        
-        mesh = GetComponent<MeshFilter>().mesh;
-
-        #endif
-
-        return mesh;
     }
 
     private Vector2[] SetupUvMap(Vector2[] meshUVs)
