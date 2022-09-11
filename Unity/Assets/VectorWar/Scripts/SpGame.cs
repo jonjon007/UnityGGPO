@@ -233,6 +233,8 @@ namespace SimpPlatformer {
 
             // Create world
             _world = new PhysWorld();
+            // Make it so that players can't collide with each other
+            _world.collisionMatrix.SetLayerCollisions(Constants.coll_layers.player, Constants.coll_layers.player, false);
 
             //// Create stationary capsule
             //Tuple<GameObject, PhysObject> capsuleTuple = _world.CreateCapsuleObject(

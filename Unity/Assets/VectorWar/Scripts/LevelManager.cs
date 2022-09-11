@@ -13,6 +13,7 @@ public class LevelManager : MonoBehaviour, Subscriber
     // Start is called before the first frame update
     void Awake()
     {
+        Debug.Log("Starting level manager");
         // Initialize world
         world = new PhysWorld();
         CreateCharacter();
