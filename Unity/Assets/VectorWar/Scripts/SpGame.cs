@@ -78,6 +78,8 @@ namespace SimpPlatformer {
         Dictionary<int, GameObject> objectIDMap;
         public int Framenumber { get; private set; }
         fp timestep;
+        int currentLevel;
+        public static int endLevel;
 
         public int Checksum => GetHashCode();
 
@@ -100,6 +102,8 @@ namespace SimpPlatformer {
             }
             // World
             _world.Serialize(bw);
+            // Level
+            bw.Write(currentLevel);
         }
 
         public void Deserialize(BinaryReader br) {
@@ -115,6 +119,8 @@ namespace SimpPlatformer {
             }
             // World
             _world.Deserialize(br);
+            // Level
+            currentLevel = br.ReadInt32();
         }
 
         /* Gets called on shutdown */
@@ -224,61 +230,33 @@ namespace SimpPlatformer {
 
         public SpGame(int num_players) {
             timestep = 1m / 60m;
-
-            var w = _bounds.xMax - _bounds.xMin;
-            var h = _bounds.yMax - _bounds.yMin;
-            var r = h / 4;
             Framenumber = 0;
             objectIDMap = new Dictionary<int, GameObject>();
+            currentLevel = 1;
+            SpGame.endLevel = -1; //No winner
 
             // Create world
             _world = new PhysWorld();
             // Make it so that players can't collide with each other
             _world.collisionMatrix.SetLayerCollisions(Constants.coll_layers.player, Constants.coll_layers.player, false);
+            // Make it so that players can't collide with noPlayer layer
+            _world.collisionMatrix.SetLayerCollisions(Constants.coll_layers.player, Constants.coll_layers.noPlayer, false);
 
-            //// Create stationary capsule
-            //Tuple<GameObject, PhysObject> capsuleTuple = _world.CreateCapsuleObject(
-            //    fp3.zero, 5, 6, true, false, fp3.zero
-            //);
-            ////PhysObjController capsuleObjCont = capsuleTuple.Item1.AddComponent<PhysObjController>();
-            ////capsuleObjCont.setPhysObject(capsuleTuple.Item2);
-
-            // Create falling sphere
-            //Tuple<GameObject, PhysObject> sphereTuple = _world.CreateSphereObject(
-            //    new fp3(5, 10, 0), 2, true, true, Constants.GRAVITY);
-            ////PhysObjController sphereObjCont = sphereTuple.Item1.AddComponent<PhysObjController>();
-            ////sphereObjCont.setPhysObject(sphereTuple.Item2);
-
-            ////// Create falling box
-            ////Tuple<GameObject, PhysObject> fboxTuple = _world.CreateAABBoxObject(
-            ////    new fp3(10, -5, 0), new fp3(1, 1, 1), true, true, Constants.GRAVITY);
-            //////PhysObjController fboxObjCont = fboxTuple.Item1.AddComponent<PhysObjController>();
-            //////fboxObjCont.setPhysObject(fboxTuple.Item2);
-
-            //// Create stationary box
-            //Tuple<GameObject, PhysObject> boxTuple = _world.CreateAABBoxObject(
-            //    new fp3(0, -10, 0), new fp3(10, 3, 5), true, false, fp3.zero);
-            ////PhysObjController boxObjCont = boxTuple.Item1.AddComponent<PhysObjController>();
-            ////boxObjCont.setPhysObject(boxTuple.Item2);
-
-            // Create ground
-            // TODO: Make constant
-            GameObject mapPrefab = GameObject.Instantiate(Resources.Load<GameObject>("_PREFAB/Maps/Map1"));
+            // Create map
+            GameObject mapPrefab = GameObject.Instantiate(Resources.Load<GameObject>($"_PREFAB/Maps/Map{currentLevel}"));
             mapPrefab.GetComponent<Map>().Initialize(_world);
-
-            // Create character
-            // Create tuple (also adds aabbox to world)
-
+            Map startMap = mapPrefab.GetComponent<Map>();
+            fp3 startPos = startMap.StartPosition.physObj.Transform.Position;
 
             // Create and add new character objects
             _characters = new Character[num_players];
             for (int i = 0; i < _characters.Length; i++) {
                 Tuple<GameObject, PhysObject> charTuple = _world.CreateAABBoxObject(
-                    new fp3(i, 10, 0), new fp3(1, 1, 1), true, true, Constants.GRAVITY * 2, Constants.coll_layers.player
+                    startPos, new fp3(1, 1, 1), true, true, Constants.GRAVITY * 2, Constants.coll_layers.player
                 );
                 charTuple.Item2.DynamicFriction = 0;
                 charTuple.Item2.StaticFriction = 0;
-                Character newChar = new Character(charTuple.Item2, _world);
+                Character newChar = new Character(charTuple.Item2, _world, i+1);
                 _characters[i] = newChar;
                 int id = charTuple.Item1.GetInstanceID();
                 _characters[i].instanceId = id;
@@ -296,6 +274,49 @@ namespace SimpPlatformer {
             
 
             // TODO: When creating objects, add to tuple with PhysObject/ObjectId/GameObject tuple
+        }
+
+        private Map SetUpMap(){
+            // Maybe I should just create a new game? Nope... not a good idea
+            int num_players = _characters.Length;
+
+            CleanUp();
+            GameObject mapPrefab = GameObject.Instantiate(Resources.Load<GameObject>($"_PREFAB/Maps/Map{currentLevel}"));
+            mapPrefab.GetComponent<Map>().Initialize(_world);
+            Map resultMap = mapPrefab.GetComponent<Map>();
+            fp3 startPos = resultMap.StartPosition.physObj.Transform.Position;
+            for(int i = 0; i < _characters.Length; i++){
+                Character c = _characters[i];
+                c.physObj.Transform.Position = startPos;
+            }
+
+            // Create and add new character objects
+            _characters = new Character[num_players];
+            for (int i = 0; i < _characters.Length; i++) {
+                Tuple<GameObject, PhysObject> charTuple = _world.CreateAABBoxObject(
+                    startPos, new fp3(1, 1, 1), true, true, Constants.GRAVITY * 2, Constants.coll_layers.player
+                );
+                charTuple.Item2.DynamicFriction = 0;
+                charTuple.Item2.StaticFriction = 0;
+                Character newChar = new Character(charTuple.Item2, _world, i+1);
+                _characters[i] = newChar;
+                int id = charTuple.Item1.GetInstanceID();
+                _characters[i].instanceId = id;
+
+                // Add object and id to map
+                objectIDMap.Add(id, charTuple.Item1);
+            }
+
+
+            // Spawn boxes
+            _boxes = new Box[num_players];
+            for (int i = 0; i < _boxes.Length; i++) {
+                createBox(i);
+            }
+
+
+            SpGame.endLevel = -1;
+            return resultMap;
         }
 
         private void createBox(int player){
@@ -384,6 +405,15 @@ namespace SimpPlatformer {
             // Game logic
             for (int i = 0; i < _characters.Length; i++) {
                 _characters[i].Step(timestep, inputs[i]);
+            }
+
+            // End level
+            if(SpGame.endLevel != -1){
+                // TODO: increment score
+
+                // TODO: Don't hardcode max number of levels
+                currentLevel = ++currentLevel > 2 ? 1 : currentLevel;
+                SetUpMap();
             }
         }
 
