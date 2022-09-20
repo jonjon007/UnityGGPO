@@ -263,6 +263,9 @@ namespace SimpPlatformer {
 
                 // Add object and id to map
                 objectIDMap.Add(id, charTuple.Item1);
+
+                // Assign color
+                charTuple.Item1.GetComponent<Renderer>().material.color = i+1 == 1 ? Color.red : i+1 == 2 ? Color.blue : i+1 == 3 ? Color.yellow : Color.green;
             }
 
 
@@ -305,6 +308,9 @@ namespace SimpPlatformer {
 
                 // Add object and id to map
                 objectIDMap.Add(id, charTuple.Item1);
+
+                // Assign color
+                charTuple.Item1.GetComponent<Renderer>().material.color = i+1 == 1 ? Color.red : i+1 == 2 ? Color.blue : i+1 == 3 ? Color.yellow : Color.green;
             }
 
 
@@ -319,6 +325,7 @@ namespace SimpPlatformer {
             return resultMap;
         }
 
+        // Player starts from 0
         private void createBox(int player){
             _boxes[player] = new Box();
             // Get new position and assign it
@@ -333,6 +340,9 @@ namespace SimpPlatformer {
 
             // Add object and id to map
             objectIDMap.Add(id, cube);
+
+            // Assign color
+            cube.GetComponent<Renderer>().material.color = player+1 == 1 ? Color.red : player+1 == 2 ? Color.blue : player+1 == 3 ? Color.yellow : Color.green;
         }
 
         public void ParseBoxInputs(long inputs, int i, out int dir, out int dirThisFrame) {
@@ -372,7 +382,8 @@ namespace SimpPlatformer {
 
             // Move physical box
             GameObject boxObj = GetObjectFromID(box.instanceId);
-            boxObj.transform.position = box.position;
+            if(!(boxObj is null))
+                boxObj.transform.position = box.position;
         }
 
         public void LogInfo(string filename) {
