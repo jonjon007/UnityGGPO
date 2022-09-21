@@ -123,6 +123,20 @@ namespace SimpPlatformer {
             currentLevel = br.ReadInt32();
         }
 
+        public override int GetHashCode() {
+            int hashCode = -1214587014;
+            hashCode = hashCode * -1521134295 + Framenumber.GetHashCode();
+            // Boxes
+            foreach (var box in _boxes) {
+                hashCode = hashCode * -1521134295 + box.GetHashCode();
+            }
+            // World
+            hashCode = hashCode * -1521134295 + _world.GetHashCode();
+            //Level
+            hashCode = hashCode * -1521134295 + currentLevel;
+            return hashCode;
+        }
+
         /* Gets called on shutdown */
         public void CleanUp(){
             //Destroy all gameobjects
@@ -436,15 +450,6 @@ namespace SimpPlatformer {
             if (data.IsCreated) {
                 data.Dispose();
             }
-        }
-
-        public override int GetHashCode() {
-            int hashCode = -1214587014;
-            hashCode = hashCode * -1521134295 + Framenumber.GetHashCode();
-            foreach (var box in _boxes) {
-                hashCode = hashCode * -1521134295 + box.GetHashCode();
-            }
-            return hashCode;
         }
     }
 }
