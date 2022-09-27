@@ -75,7 +75,7 @@ namespace SimpPlatformer {
     public struct SpGame : IGame {
         // TODO: Keep track of PhysObject/GameObject/id map (3-tuple?)
             // Yeah, start with 3-tuple and if it becomes redundant, make it smaller
-        Dictionary<int, GameObject> objectIDMap;
+        // Dictionary<int, GameObject> objectIDMap;
         public int Framenumber { get; private set; }
         fp timestep;
         int currentLevel;
@@ -104,6 +104,11 @@ namespace SimpPlatformer {
             _world.Serialize(bw);
             // Level
             bw.Write(currentLevel);
+            // Characters
+            bw.Write(_characters.Length);
+            for (int i = 0; i < _characters.Length; ++i) {
+                _characters[i].Serialize(bw);
+            }
         }
 
         public void Deserialize(BinaryReader br) {
@@ -121,6 +126,15 @@ namespace SimpPlatformer {
             _world.Deserialize(br);
             // Level
             currentLevel = br.ReadInt32();
+            // Characters
+            int character_length = br.ReadInt32();
+            if (character_length != _characters.Length) {
+                _characters = new Character[character_length];
+            }
+            for (int i = 0; i < _characters.Length; ++i) {
+                _characters[i].SetWorld(_world);
+                _characters[i].Deserialize(br);
+            }
         }
 
         public override int GetHashCode() {
@@ -140,11 +154,11 @@ namespace SimpPlatformer {
         /* Gets called on shutdown */
         public void CleanUp(){
             //Destroy all gameobjects
-            foreach(KeyValuePair<int, GameObject> kvp in objectIDMap){
-                GameObject g = kvp.Value;
-                GameObject.Destroy(g);
-            }
-            objectIDMap.Clear();
+            // foreach(KeyValuePair<int, GameObject> kvp in objectIDMap){
+            //     GameObject g = kvp.Value;
+            //     GameObject.Destroy(g);
+            // }
+            // objectIDMap.Clear();
 
             //Clean up world
             _world.CleanUp();
@@ -192,7 +206,7 @@ namespace SimpPlatformer {
 
         private GameObject GetObjectFromID(int id){
             GameObject result = null;
-            objectIDMap.TryGetValue(id, out result);
+            // objectIDMap.TryGetValue(id, out result);
             if(result == null)
                 Debug.Log("GO not found.");
             return result;
@@ -245,7 +259,7 @@ namespace SimpPlatformer {
         public SpGame(int num_players) {
             timestep = 1m / 60m;
             Framenumber = 0;
-            objectIDMap = new Dictionary<int, GameObject>();
+            // objectIDMap = new Dictionary<int, GameObject>();
             currentLevel = 1;
             SpGame.endLevel = -1; //No winner
 
@@ -276,7 +290,7 @@ namespace SimpPlatformer {
                 _characters[i].instanceId = id;
 
                 // Add object and id to map
-                objectIDMap.Add(id, charTuple.Item1);
+                // objectIDMap.Add(id, charTuple.Item1);
 
                 // Assign color
                 charTuple.Item1.GetComponent<Renderer>().material.color = i+1 == 1 ? Color.red : i+1 == 2 ? Color.blue : i+1 == 3 ? Color.yellow : Color.green;
@@ -321,7 +335,7 @@ namespace SimpPlatformer {
                 _characters[i].instanceId = id;
 
                 // Add object and id to map
-                objectIDMap.Add(id, charTuple.Item1);
+                // objectIDMap.Add(id, charTuple.Item1);
 
                 // Assign color
                 charTuple.Item1.GetComponent<Renderer>().material.color = i+1 == 1 ? Color.red : i+1 == 2 ? Color.blue : i+1 == 3 ? Color.yellow : Color.green;
@@ -353,7 +367,7 @@ namespace SimpPlatformer {
             _boxes[player].instanceId = id;
 
             // Add object and id to map
-            objectIDMap.Add(id, cube);
+            // objectIDMap.Add(id, cube);
 
             // Assign color
             cube.GetComponent<Renderer>().material.color = player+1 == 1 ? Color.red : player+1 == 2 ? Color.blue : player+1 == 3 ? Color.yellow : Color.green;
@@ -395,9 +409,9 @@ namespace SimpPlatformer {
             }
 
             // Move physical box
-            GameObject boxObj = GetObjectFromID(box.instanceId);
-            if(!(boxObj is null))
-                boxObj.transform.position = box.position;
+            // GameObject boxObj = GetObjectFromID(box.instanceId);
+            // if(!(boxObj is null))
+            //     boxObj.transform.position = box.position;
         }
 
         public void LogInfo(string filename) {

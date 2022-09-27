@@ -5,8 +5,6 @@ using SepM.Physics;
 using SepM.Utils;
 using UnityEngine;
 using IR = InputRegistry;
-// Reloading level
-using UnityEngine.SceneManagement;
 
 namespace SimpPlatformer{
     [Serializable]
@@ -17,15 +15,41 @@ namespace SimpPlatformer{
         public bool onGround;
         public int moveSpeed = 3;
         private PhysWorld world;
-        public int instanceId;
+        public int instanceId; // TODO: Remove?
         private int playerNum;
 
+        // TODO: Write tests
         public void Serialize(BinaryWriter bw) {
-            // TOOD: Serialize instance id
+        //startPos
+            bw.WriteFp(startPos.x);
+            bw.WriteFp(startPos.y);
+            bw.WriteFp(startPos.z);
+        // physObj
+            // Serialize PhysObject's index
+            int poIndex = world.GetPhysObjectIndexById(physObj.InstanceId);
+            bw.Write(poIndex);
+        //onGround
+            bw.Write(onGround);
+        //moveSpeed
+            bw.Write(moveSpeed);
+        //playerNum;
+            bw.Write(playerNum);
         }
 
         public void Deserialize(BinaryReader br) {
-
+        //startPos
+            startPos.x = br.ReadFp();
+            startPos.y = br.ReadFp();
+            startPos.z = br.ReadFp();
+        // physObj
+            // Grab PhysObject by the index
+            physObj = world.GetPhysObjectByIndex(br.ReadInt32());
+        //onGround
+            onGround = br.ReadBoolean();
+        //moveSpeed
+            moveSpeed = br.ReadInt32();
+        //playerNum;
+            playerNum = br.ReadInt32();
         }
 
         public Character(PhysObject po, PhysWorld w, int pn) {
@@ -37,15 +61,17 @@ namespace SimpPlatformer{
             playerNum = pn;
         }
 
+        public void SetWorld(PhysWorld w){
+            world = w;
+        }
+
         /// <summary>
         /// Takes given inputs and runs game logic passed on what was pressed
         /// </summary>
         public void Step(fp timestep, long inputs){
-            Debug.Log("OnGround " + onGround.ToString());
             // Jumping
             if(onGround){
                 if(IR.CheckInput(inputs, IR.INPUT_UP)){
-                    Debug.Log("JAMP!");
                     physObj.SetVelocity(new fp3(physObj.Velocity.x, 0, physObj.Velocity.z))   ;
                     physObj.AddForce(new fp3(0,3000,0));
                     onGround = false;
