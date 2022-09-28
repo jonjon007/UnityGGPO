@@ -286,8 +286,6 @@ namespace SimpPlatformer {
                 charTuple.Item2.StaticFriction = 0;
                 Character newChar = new Character(charTuple.Item2, _world, i+1);
                 _characters[i] = newChar;
-                int id = charTuple.Item1.GetInstanceID();
-                _characters[i].instanceId = id;
 
                 // Add object and id to map
                 // objectIDMap.Add(id, charTuple.Item1);
@@ -332,8 +330,6 @@ namespace SimpPlatformer {
                 charTuple.Item2.StaticFriction = 0;
                 Character newChar = new Character(charTuple.Item2, _world, i+1);
                 _characters[i] = newChar;
-                int id = charTuple.Item1.GetInstanceID();
-                _characters[i].instanceId = id;
 
                 // Add object and id to map
                 // objectIDMap.Add(id, charTuple.Item1);

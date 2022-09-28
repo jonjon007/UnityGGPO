@@ -84,8 +84,6 @@ public class Spawner : MonoBehaviour
             charTuple.Item2.StaticFriction = 0;
             Character newChar = new Character(charTuple.Item2, game._world, pIndex+1);
             game._characters[pIndex] = newChar;
-            int id = charTuple.Item1.GetInstanceID();
-            game._characters[pIndex].instanceId = id;
 
             // Assign color
             charTuple.Item1.GetComponent<Renderer>().material.color = pIndex+1 == 1 ? Color.red : pIndex+1 == 2 ? Color.blue : pIndex+1 == 3 ? Color.yellow : Color.green;
