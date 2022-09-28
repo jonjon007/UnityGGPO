@@ -78,7 +78,7 @@ namespace SimpPlatformer {
         // Dictionary<int, GameObject> objectIDMap;
         public int Framenumber { get; private set; }
         fp timestep;
-        int currentLevel;
+        public int currentLevel;
         public static int endLevel;
 
         public int Checksum => GetHashCode();
@@ -307,7 +307,8 @@ namespace SimpPlatformer {
             // TODO: When creating objects, add to tuple with PhysObject/ObjectId/GameObject tuple
         }
 
-        private Map SetUpMap(){
+        // TODO: Revert to private
+        public Map SetUpMap(){
             // Maybe I should just create a new game? Nope... not a good idea
             int num_players = _characters.Length;
 

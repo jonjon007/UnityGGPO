@@ -44,6 +44,7 @@ namespace SimpPlatformer{
         // physObj
             // Grab PhysObject by the index
             physObj = world.GetPhysObjectByIndex(br.ReadInt32());
+            physObj.IColl = this;
         //onGround
             onGround = br.ReadBoolean();
         //moveSpeed

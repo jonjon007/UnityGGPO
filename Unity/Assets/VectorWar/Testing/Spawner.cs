@@ -35,26 +35,36 @@ public class Spawner : MonoBehaviour
             game._world.CleanUp();
             Debug.Log("Clear");
         }
-        if(Keyboard.current.digit1Key.wasPressedThisFrame){
+        else if(Keyboard.current.digit1Key.wasPressedThisFrame){
             Tuple<GameObject, PhysObject> charTuple = game._world.CreateAABBoxObject(
                 new fp3(0,-2,0), new fp3(1, 1, 1), true, true, Constants.GRAVITY * 0, Constants.coll_layers.player
             );
             Debug.Log("Create object");
         }
-        if(Keyboard.current.digit2Key.wasPressedThisFrame){
+        else if(Keyboard.current.digit2Key.wasPressedThisFrame){
             CreateCharacter(0);
             CreateCharacter(1);
             Debug.Log("Create characters");
         }
+        else if(Keyboard.current.digit3Key.wasPressedThisFrame){
+            game.currentLevel = 1;
+            game.SetUpMap();
+            Debug.Log("Load map 1");
+        }
+        else if(Keyboard.current.digit4Key.wasPressedThisFrame){
+            game.currentLevel = 2;
+            game.SetUpMap();
+            Debug.Log("Load map 2");
+        }
 
         // Save
-        if(Keyboard.current.digit5Key.wasPressedThisFrame){
+        else if(Keyboard.current.digit5Key.wasPressedThisFrame){
             seriGame = game.ToBytes();
             Debug.Log("Save");
         }
 
         // Load
-        if(Keyboard.current.digit6Key.wasPressedThisFrame){
+        else if(Keyboard.current.digit6Key.wasPressedThisFrame){
             if(seriGame.IsCreated){
                 game.FromBytes(seriGame);
                 seriGame.Dispose();
@@ -85,6 +95,10 @@ public class Spawner : MonoBehaviour
         long[] inputs = new long[2];
         if(Keyboard.current.aKey.isPressed)
             inputs[0] |= IR.INPUT_LEFT;
+        if(Keyboard.current.dKey.isPressed)
+            inputs[0] |= IR.INPUT_RIGHT;
+        if(Keyboard.current.wKey.isPressed)
+            inputs[0] |= IR.INPUT_UP;
         game.Update(inputs, 0);
     }
 }
