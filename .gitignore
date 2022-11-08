@@ -38,3 +38,9 @@ Unity/Logs/Packages-Update.log
 UnityBuilds/
 Unity/*.log
 Unity/Logs/
+
+# Ignore PlayFab packages
+PlayFabSDK/
+PlayFabPartySDK/
+PlayFabSDK.meta
+PlayFabPartySDK.meta
