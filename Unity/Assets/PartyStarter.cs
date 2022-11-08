@@ -7,6 +7,7 @@ using PlayFab.ClientModels;
 //using TMPro;
 using System.Text;
 using UnityEngine.InputSystem;
+using System;
 
 #if MICROSOFT_GAME_CORE
 using XGamingRuntime;
@@ -58,7 +59,12 @@ public class PartyStarter : MonoBehaviour {
         var request = new LoginWithXboxRequest { CreateAccount = true, TitleId = PlayFabSettings.TitleId, XboxToken = XboxManager.Instance.XToken };
         PlayFabClientAPI.LoginWithXbox(request, OnLoginSuccess, OnLoginFailure);
 #else
-        var request = new LoginWithCustomIDRequest { CustomId = UnityEngine.Random.value.ToString(), CreateAccount = true };
+        byte[] byteContents = Encoding.Unicode.GetBytes(SystemInfo.deviceName);
+        byte[] hashText = new System.Security.Cryptography.SHA256CryptoServiceProvider().ComputeHash(byteContents);
+        string customId = BitConverter.ToInt32(hashText, 0).ToString(); // For testing; get machine name and set it as the custom id
+        Debug.Log($"CustomId: {customId}");
+
+        var request = new LoginWithCustomIDRequest { CustomId = customId, CreateAccount = true };
         PlayFabClientAPI.LoginWithCustomID(request, OnLoginSuccess, OnLoginFailure);
 #endif
         // Return null to end the CoRoutine
